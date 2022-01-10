@@ -7,6 +7,8 @@ use App\Repository\ConversationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\PersistentCollection;
+use phpDocumentor\Reflection\Types\Array_;
 
 /**
  * @ApiResource()
@@ -36,10 +38,16 @@ class Conversation
      */
     private $users;
 
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $lastUpdatedAt;
+
     public function __construct()
     {
         $this->messages = new ArrayCollection();
         $this->users = new ArrayCollection();
+        $this->lastUpdatedAt = new \DateTime();
     }
 
     public function getId(): ?int
@@ -59,10 +67,7 @@ class Conversation
         return $this;
     }
 
-    /**
-     * @return Collection|Message[]
-     */
-    public function getMessages(): Collection
+    public function getMessages()
     {
         return $this->messages;
     }
@@ -77,6 +82,16 @@ class Conversation
         return $this;
     }
 
+    public function setMessagesNotCircular(){
+        $lMessages = [];
+        foreach ($this->messages as $message){
+            $oUser = $message->getUser();
+            $userPseudo = $oUser->getPseudo();
+            $lMessages[] = ["id" => $message->getId(), "msg" => $message->getMsg(), "sentAt" => $message->getSentAt(), "userPseudo" => $userPseudo];
+        }
+        $this->messages = $lMessages;
+    }
+
     public function removeMessage(Message $message): self
     {
         if ($this->messages->removeElement($message)) {
@@ -89,10 +104,7 @@ class Conversation
         return $this;
     }
 
-    /**
-     * @return Collection|User[]
-     */
-    public function getUsers(): Collection
+    public function getUsers()
     {
         return $this->users;
     }
@@ -109,6 +121,27 @@ class Conversation
     public function removeUser(User $user): self
     {
         $this->users->removeElement($user);
+
+        return $this;
+    }
+
+    public function setUsersNotCircular(){
+        $lUsersPseudo = [];
+        foreach ($this->users as $user){
+            $lUsersPseudo[] = $user->getPseudo();
+        }
+
+        $this->users = $lUsersPseudo;
+    }
+
+    public function getLastUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->lastUpdatedAt;
+    }
+
+    public function setLastUpdatedAt(\DateTimeInterface $lastUpdatedAt): self
+    {
+        $this->lastUpdatedAt = $lastUpdatedAt;
 
         return $this;
     }

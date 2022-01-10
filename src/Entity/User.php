@@ -29,7 +29,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $email;
 
     /**
-     * @ORM\Column(type="json")
+     * @ORM\Column(type="array")
      */
     private $roles = [];
 
@@ -96,6 +96,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->conversations = new ArrayCollection();
         $this->isActive = true;
         $this->createdAt = new \DateTimeImmutable();
+        $this->roles = ["ROLE_USER"];
     }
 
     public function getId(): ?int
